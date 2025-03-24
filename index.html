@@ -42,6 +42,16 @@
             transform: scale(1.02);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
+
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            canvas {
+                height: 350px;
+            }
+        }
     </style>
 </head>
 
@@ -58,13 +68,34 @@
             const engine = new BABYLON.Engine(canvas, true);
             const scene = new BABYLON.Scene(engine);
 
-            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 3, 5, BABYLON.Vector3.Zero(), scene);
+            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
             camera.attachControl(canvas, true);
 
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
             BABYLON.SceneLoader.ImportMesh("", modelFolder, modelFile, scene, function (meshes) {
-                meshes[0].scaling = new BABYLON.Vector3(1, 1, 1);
+                let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                let max = new BABYLON.Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+
+                meshes.forEach(mesh => {
+                    mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+                    mesh.computeWorldMatrix(true);
+                    const bounding = mesh.getBoundingInfo().boundingBox;
+                    min = BABYLON.Vector3.Minimize(min, bounding.minimumWorld);
+                    max = BABYLON.Vector3.Maximize(max, bounding.maximumWorld);
+                });
+
+                const center = BABYLON.Vector3.Center(min, max);
+                const size = max.subtract(min).length();
+
+                camera.target = center;
+                // Zoom in/out disesuaikan per model
+                if (canvasId === "model2") {
+                    camera.radius = size * 1.1; // lebih dekat (zoom in)
+                } else {
+                    camera.radius = size * 1.5; // default
+                }
+
             }, null, function (scene, message) {
                 console.error("Gagal memuat model:", message);
             });
@@ -72,6 +103,7 @@
             engine.runRenderLoop(() => scene.render());
             window.addEventListener("resize", () => engine.resize());
         }
+
 
         createScene("model1", "Models/Horse/scene.gltf");
         createScene("model2", "Models/Mamooth/scene.gltf");
