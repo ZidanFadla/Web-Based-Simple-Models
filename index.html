@@ -89,11 +89,11 @@
                 const size = max.subtract(min).length();
 
                 camera.target = center;
-                // Zoom in/out disesuaikan per model
+
                 if (canvasId === "model2") {
-                    camera.radius = size * 1.1; // lebih dekat (zoom in)
+                    camera.radius = size * 1.1; 
                 } else {
-                    camera.radius = size * 1.5; // default
+                    camera.radius = size * 1.5; 
                 }
 
             }, null, function (scene, message) {
