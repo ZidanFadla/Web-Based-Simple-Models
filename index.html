@@ -2,8 +2,8 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>M3 - Web Based Simple Model</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
@@ -35,7 +35,6 @@
             border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background-color: #e0f7fa;
         }
 
         canvas:hover {
@@ -59,7 +58,6 @@
     <h1>Kelompok 7 Web Based Simple 3D Model</h1>
     <div class="model-container">
         <canvas id="model1"></canvas>
-        <canvas id="model2"></canvas>
     </div>
 
     <script>
@@ -67,36 +65,76 @@
             const canvas = document.getElementById(canvasId);
             const engine = new BABYLON.Engine(canvas, true);
             const scene = new BABYLON.Scene(engine);
-
+            scene.clearColor = new BABYLON.Color4(0.02, 0.02, 0.02, 1);
 
             const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
             camera.attachControl(canvas, true);
 
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+            const target = new BABYLON.TransformNode("target", scene);
 
+            // Ambient light
+            const ambientLight = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 1, 0), scene);
+            ambientLight.intensity = 0.4;
+
+            // Spotlights
+            const topLight = new BABYLON.SpotLight("topLight", new BABYLON.Vector3(0, 5, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
+            topLight.intensity = 2.5;
+
+            const sideLight = new BABYLON.SpotLight("sideLight", new BABYLON.Vector3(4, 2, 0), new BABYLON.Vector3(-1, -0.2, 0), Math.PI / 3, 2, scene);
+            sideLight.intensity = 2.5;
+
+            // LIGHTNING - BIG, FAST, FLASH
+            const lightning = new BABYLON.PointLight("lightning", new BABYLON.Vector3(0, 8, 0), scene);
+            lightning.diffuse = new BABYLON.Color3(1, 1, 1); // Putih terang
+            lightning.range = 10000;
+            lightning.intensity = 100;
+
+            function flashLightning() {
+                lightning.intensity = 100;
+                setTimeout(() => {
+                    lightning.intensity = 0;
+                    // Optional: double flash
+                    setTimeout(() => {
+                        lightning.intensity = 10;
+                        setTimeout(() => {
+                            lightning.intensity = 0;
+                        }, 80);
+                    }, 100);
+                }, 100);
+            }
+
+            setInterval(() => {
+                flashLightning();
+            }, 1000 + Math.random() * 500); // Lebih cepat & acak
+
+            // Shadows
+            const shadowGenerator = new BABYLON.ShadowGenerator(2048, topLight);
+            shadowGenerator.useExponentialShadowMap = true;
+
+            // Load model
             BABYLON.SceneLoader.ImportMesh("", modelFolder, modelFile, scene, function (meshes) {
                 let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 let max = new BABYLON.Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
                 meshes.forEach(mesh => {
-                    mesh.scaling = new BABYLON.Vector3(1, 1, 1);
                     mesh.computeWorldMatrix(true);
                     const bounding = mesh.getBoundingInfo().boundingBox;
                     min = BABYLON.Vector3.Minimize(min, bounding.minimumWorld);
                     max = BABYLON.Vector3.Maximize(max, bounding.maximumWorld);
+
+                    mesh.receiveShadows = true;
+                    shadowGenerator.addShadowCaster(mesh);
                 });
 
                 const center = BABYLON.Vector3.Center(min, max);
                 const size = max.subtract(min).length();
 
                 camera.target = center;
+                camera.radius = size * 1.5;
 
-                if (canvasId === "model2") {
-                    camera.radius = size * 1.1; 
-                } else {
-                    camera.radius = size * 1.5; 
-                }
-
+                target.position = center.clone();
+                topLight.setDirectionToTarget(target.position);
+                sideLight.setDirectionToTarget(target.position);
             }, null, function (scene, message) {
                 console.error("Gagal memuat model:", message);
             });
@@ -105,10 +143,9 @@
             window.addEventListener("resize", () => engine.resize());
         }
 
-
-        createScene("model1", "Models/Horse/scene.gltf");
-        createScene("model2", "Models/Mamooth/scene.gltf");
+        createScene("model1", "Models/Horse/", "scene.gltf");
     </script>
+
 </body>
 
 </html>
