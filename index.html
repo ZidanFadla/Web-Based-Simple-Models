@@ -22,8 +22,8 @@
         }
 
         canvas {
-            width: 400px;
-            height: 400px;
+            width: 750px;
+            height: 750px;
             border: 1px solid #ccc;
         }
     </style>
@@ -53,7 +53,7 @@
             camera.attachControl(canvas, true);
 
             // Ground
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 30, height: 30 }, scene);
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 90, height: 500 }, scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
             groundMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
             ground.material = groundMaterial;
