@@ -61,6 +61,8 @@
             shadowGenerator.depthScale = 100;
             shadowGenerator.darkness = 0.3;
 
+            let modelMeshes = []; // Array untuk menyimpan semua mesh model
+
             BABYLON.SceneLoader.Append("Models/", "aircraft.obj", scene, function (scene) {
                 console.log("Model berhasil dimuat!");
 
@@ -77,11 +79,13 @@
                         mesh.castShadow = true;
                         shadowGenerator.addShadowCaster(mesh);
 
+                        modelMeshes.push(mesh); // Tambahkan mesh ke array
+
                         // ANIMASI MAJU-MUNDUR otomatis (sumbu Z)
                         const moveAnimation = new BABYLON.Animation(
                             "moveForwardOnce",
                             "position.x",
-                            20,
+                            10,
                             BABYLON.Animation.ANIMATIONTYPE_FLOAT,
                             BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT // tidak otomatis ulang balik
                         );
@@ -95,7 +99,7 @@
                         mesh.animations = [moveAnimation];
 
                         const startAnimationLoop = () => {
-                            mesh.position.z = 0; // reset ke posisi awal
+                            mesh.position.x = 10; // reset ke posisi awal
                             scene.beginAnimation(mesh, 0, 90, false, 1.0, () => {
                                 setTimeout(startAnimationLoop, 100); // delay sejenak lalu ulang
                             });
@@ -108,6 +112,28 @@
                 if (scene.animationGroups && scene.animationGroups.length > 0) {
                     scene.animationGroups.forEach(animGroup => {
                         animGroup.start(true);
+                    });
+                }
+            });
+
+            // Kontrol keyboard
+            const keys = { a: false, d: false };
+            window.addEventListener("keydown", (event) => {
+                if (event.key === "a" || event.key === "A") keys.a = true;
+                if (event.key === "d" || event.key === "D") keys.d = true;
+            });
+            window.addEventListener("keyup", (event) => {
+                if (event.key === "a" || event.key === "A") keys.a = false;
+                if (event.key === "d" || event.key === "D") keys.d = false;
+            });
+
+            // Update posisi model berdasarkan input keyboard
+            scene.registerBeforeRender(() => {
+                if (modelMeshes.length > 0) {
+                    const moveSpeed = 0.1; // Sesuaikan kecepatan sesuai kebutuhan
+                    modelMeshes.forEach(mesh => {
+                        if (keys.a) mesh.position.z -= moveSpeed; // Bergerak ke kiri
+                        if (keys.d) mesh.position.z += moveSpeed; // Bergerak ke kanan
                     });
                 }
             });
