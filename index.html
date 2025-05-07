@@ -81,7 +81,7 @@
 
                         modelMeshes.push(mesh); // Tambahkan mesh ke array
 
-                        // ANIMASI MAJU-MUNDUR otomatis (sumbu Z)
+                        // ANIMASI MAJU-MUNDUR otomatis (sumbu X)
                         const moveAnimation = new BABYLON.Animation(
                             "moveForwardOnce",
                             "position.x",
@@ -117,14 +117,18 @@
             });
 
             // Kontrol keyboard
-            const keys = { a: false, d: false };
+            const keys = { a: false, d: false, w: false, s: false };
             window.addEventListener("keydown", (event) => {
                 if (event.key === "a" || event.key === "A") keys.a = true;
                 if (event.key === "d" || event.key === "D") keys.d = true;
+                if (event.key === "w" || event.key === "W") keys.w = true;
+                if (event.key === "s" || event.key === "S") keys.s = true;
             });
             window.addEventListener("keyup", (event) => {
                 if (event.key === "a" || event.key === "A") keys.a = false;
                 if (event.key === "d" || event.key === "D") keys.d = false;
+                if (event.key === "w" || event.key === "W") keys.w = false;
+                if (event.key === "s" || event.key === "S") keys.s = false;
             });
 
             // Update posisi model berdasarkan input keyboard
@@ -134,6 +138,8 @@
                     modelMeshes.forEach(mesh => {
                         if (keys.a) mesh.position.z -= moveSpeed; // Bergerak ke kiri
                         if (keys.d) mesh.position.z += moveSpeed; // Bergerak ke kanan
+                        if (keys.w) mesh.position.y += moveSpeed; // Bergerak naik
+                        if (keys.s) mesh.position.y -= moveSpeed; // Bergerak turun
                     });
                 }
             });
